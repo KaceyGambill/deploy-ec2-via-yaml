@@ -13,3 +13,8 @@ AWS_REGION_NAME = "us-west-2"
 ```
 
 once you have the requirements set up and the .env file configured you should be able to run the main.py file using ```python3 main.py```
+
+
+### Keep in mind
+Line 13 of main.py is where you set the name of the yaml file
+You must have a priavte key for the users. This will only save the public key to their authorized_keys. To connect you must edit the yaml, provide the public key value, then use the private key to connect

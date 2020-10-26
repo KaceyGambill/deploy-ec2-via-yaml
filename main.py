@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # get settings from parsed yaml file
-server_settings = yaml_parser.get_server_config('ec2_config.yaml')
+server_settings = yaml_parser.get_server_config('ec2_conf.yaml')
 
 # declare empty variable, later used in creating ec2_instance
 ec2_instance_ami_type = ''
