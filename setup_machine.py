@@ -32,3 +32,15 @@ def format_and_mount_ebs(volumes):
             ssh_commands.append('sudo mount {} {}'.format(device_name, device_mount))
             ssh_commands.append('sudo chmod 777 /data')
     return ssh_commands
+
+def connect_to_instance(ssh_key, instance_ip, ssh_commands):
+    # set key to read only to current user for SSH
+    os.chmod(ssh_key, stat.S_IRUSR)
+    sshProcess = subprocess.Popen(['ssh', '-i', f'{ssh_key}','-o', 'StrictHostKeyChecking=no', '-p', '22', '-tt', f'ec2-user@{instance_ip}'],
+            stdin=subprocess.PIPE,
+            stdout = subprocess.PIPE,
+            universal_newlines=True,
+            bufsize=0)
+    for command in ssh_commands:
+        sshProcess.stdin.write(command + '\n')
+    sshProcess.stdin.close()
