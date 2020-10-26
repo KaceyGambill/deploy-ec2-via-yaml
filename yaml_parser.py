@@ -9,5 +9,3 @@ def get_server_config(file_name):
     server = doc["server"]
 
     return server
-
-get_server_config('fetch.yaml')

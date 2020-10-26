@@ -14,7 +14,6 @@ def create_user_ssh_command_array(users):
         ssh_commands.append('touch .ssh/authorized_keys')
         ssh_commands.append('chmod 600 .ssh/authorized_keys')
         ssh_commands.append('echo {} >> .ssh/authorized_keys'.format(user_pub_key))
-        ssh_commands.append('echo "TEJOITO" >> the_file')
         ssh_commands.append('exit')
     return ssh_commands
 

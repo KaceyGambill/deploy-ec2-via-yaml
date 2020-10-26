@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # get settings from parsed yaml file
-server_settings = yaml_parser.get_server_config('fetch.yaml')
+server_settings = yaml_parser.get_server_config('ec2_config.yaml')
 
 # declare empty variable, later used in creating ec2_instance
 ec2_instance_ami_type = ''
@@ -70,3 +70,43 @@ f = open(ec2_key_pair_file_name, 'w+')
 f.write(ec2_key_pair['KeyMaterial'])
 f.close()
 
+
+# creates the ec2_instance
+ec2_instance = ec2_client.run_instances(
+
+        BlockDeviceMappings=ebs_volume_mapping,
+        ImageId=ec2_instance_ami_type,
+        InstanceType=server_settings['instance_type'],
+        MinCount=server_settings['min_count'],
+        MaxCount=server_settings['max_count'],
+        KeyName=ec2_key_pair_name,
+        Monitoring = {
+            'Enabled': False
+            },
+        SecurityGroupIds=[
+            sec_grp_id
+        ]
+)
+ec2_instance_id = ec2_instance["Instances"][0].get("InstanceId")
+
+# sleep 3 seconds before describing the instance, this allows time for a public Ip address to be assigned
+time.sleep(3)
+
+ec2_instance_info = ec2_client.describe_instances(
+        InstanceIds=[
+            ec2_instance_id
+        ]
+)
+ec2_public_ip_address = ec2_instance_info["Reservations"][0]["Instances"][0].get("PublicIpAddress")
+
+
+# build ssh_commands list, which will be used to provide the ssh_commands that set up the volumes & users
+volume_config_commands = setup_machine.format_and_mount_ebs(server_settings["volumes"])
+user_setup_commands = setup_machine.create_user_ssh_command_array(server_settings["users"])
+ssh_commands = volume_config_commands + user_setup_commands
+
+# supposed to be able to use the ec2.resource wait until instance is running -buggy-
+# could alternatively poll instance with a describe status and once it was ready then execute the connect_to_instance function
+# due to time, going with time.sleep(180) for now
+time.sleep(180)
+setup_machine.connect_to_instance(ec2_key_pair_file_name, ec2_public_ip_address, ssh_commands)
