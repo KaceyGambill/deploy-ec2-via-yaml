@@ -17,3 +17,18 @@ def create_user_ssh_command_array(users):
         ssh_commands.append('echo "TEJOITO" >> the_file')
         ssh_commands.append('exit')
     return ssh_commands
+
+def format_and_mount_ebs(volumes):
+    ssh_commands = []
+    for volume in volumes:
+        device_name = volume.get('device')
+        device_type = volume.get('type')
+        device_mount = volume.get('mount')
+        if search("xvda", device_name):
+            print('This is the root volume. We do not need to add it to the array')
+        else:
+            ssh_commands.append('sudo mkdir {}'.format(device_mount))
+            ssh_commands.append('sudo mkfs -t xfs {}'.format(device_name))
+            ssh_commands.append('sudo mount {} {}'.format(device_name, device_mount))
+            ssh_commands.append('sudo chmod 777 /data')
+    return ssh_commands
